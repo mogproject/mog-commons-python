@@ -4,8 +4,8 @@ mog-commons-python
 
 Common utility library for Python
 
-.. image:: https://badge.fury.io/py/mog-commons-python.svg
-   :target: http://badge.fury.io/py/mog-commons-python
+.. image:: https://badge.fury.io/py/mog-commons.svg
+   :target: http://badge.fury.io/py/mog-commons
    :alt: PyPI version
 
 .. image:: https://travis-ci.org/mogproject/mog-commons-python.svg?branch=master
