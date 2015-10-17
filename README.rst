@@ -1,6 +1,6 @@
-===========
-mog-commons
-===========
+==================
+mog-commons-python
+==================
 
 Common utility library for Python
 
