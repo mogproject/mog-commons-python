@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import, unicode_literals
 
+import six
 from mog_commons import string, unittest
 
 
@@ -10,10 +11,39 @@ class TestString(unittest.TestCase):
         self.assertEqual(string.unicode_width('あいう'.encode('utf-8')), 9)
         self.assertEqual(string.unicode_width('あいう'), 6)
 
+    def test_to_str(self):
+        self.assertEqual(string.to_str(b'abc'), string.to_str('abc'))
+        self.assertEqual(string.to_str(1.23), '1.23')
+
+    @unittest.base_unittest.skipUnless(six.PY2, 'requires Python 2')
+    def test_to_str_py2(self):
+        s = 'あいう'
+        t = s.encode('utf-8')
+        self.assertTrue(isinstance(s, unicode))
+        self.assertTrue(isinstance(string.to_str(s), str))
+        self.assertTrue(isinstance(t, str))
+        self.assertTrue(isinstance(string.to_str(t), str))
+        self.assertEqual(string.to_str(s), string.to_str(t))
+
+    @unittest.base_unittest.skipUnless(six.PY3, 'requires Python 3')
+    def test_to_str_py3(self):
+        s = 'あいう'
+        t = s.encode('utf-8')
+        self.assertTrue(isinstance(s, str))
+        self.assertTrue(isinstance(string.to_str(s), str))
+        self.assertTrue(isinstance(t, bytes))
+        self.assertTrue(isinstance(string.to_str(t), str))
+        self.assertEqual(string.to_str(s), string.to_str(t))
+
     def test_to_unicode(self):
         self.assertEqual(string.to_unicode(b'abc'), 'abc')
         self.assertEqual(string.to_unicode('あいう'), 'あいう')
         self.assertEqual(string.to_unicode(1.23), '1.23')
+
+    def test_to_bytes(self):
+        self.assertEqual(string.to_bytes(b'abc'), b'abc')
+        self.assertEqual(string.to_bytes('あいう'), 'あいう'.encode('utf-8'))
+        self.assertEqual(string.to_bytes(1.23), b'1.23')
 
     def test_edge_just(self):
         self.assertEqual(string.edge_just('', '', 0), ' ')
