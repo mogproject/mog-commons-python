@@ -69,6 +69,18 @@ class CaseClass(object):
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, ', '.join('%s=%r' % (k, getattr(self, k)) for k in self._keys))
 
+    def copy(self, **kwargs):
+        """
+        :param kwargs:
+        :return: copy of this object modifying the kwargs
+        """
+        for k in kwargs:
+            assert k in self._keys, 'Invalid key: %s' % k
+
+        d = self.values()
+        d.update(kwargs)
+        return self.__class__(**d)
+
     def values(self):
         """
         :return: key-value dict : { string: any }
