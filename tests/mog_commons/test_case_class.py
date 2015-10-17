@@ -72,8 +72,16 @@ class TestCaseClass(unittest.TestCase):
         self.assertRaisesRegexp(TypeError, '^unorderable types: Coord\(\) < ', lambda: Coord(123, 45) < 'x')
         self.assertRaisesRegexp(TypeError, '^unorderable types: Coord\(\) < AAA\(\)$', lambda: Coord(123, 45) < AAA())
 
-    def test_values(self):
-        self.assertEqual(Coord(123, 45).values(), {'x': 123, 'y': 45})
-
     def test_repr(self):
         self.assertEqual(repr(Coord(123, 45)), 'Coord(x=123, y=45)')
+
+    def test_copy(self):
+        a = Coord(123, 45)
+        b = a.copy(y=67)
+        self.assertEqual(b, Coord(123, 67))
+
+    def test_copy_error(self):
+        self.assertRaisesRegexp(AssertionError, 'Invalid key: z', Coord(123, 45).copy, x=999, z=999)
+
+    def test_values(self):
+        self.assertEqual(Coord(123, 45).values(), {'x': 123, 'y': 45})
