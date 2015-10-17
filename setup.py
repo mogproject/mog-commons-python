@@ -20,10 +20,7 @@ setup(
     url='https://github.com/mogproject/mog-commons-python',
     install_requires=[
         'six',
-        'python-dateutil',
-        'pytz',
         'unittest2',
-        # 'mock',
     ],
     tests_require=[
     ],
