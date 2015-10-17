@@ -40,6 +40,11 @@ class TestString(unittest.TestCase):
         self.assertEqual(string.to_unicode('あいう'), 'あいう')
         self.assertEqual(string.to_unicode(1.23), '1.23')
 
+    def test_to_bytes(self):
+        self.assertEqual(string.to_bytes(b'abc'), b'abc')
+        self.assertEqual(string.to_bytes('あいう'), 'あいう'.encode('utf-8'))
+        self.assertEqual(string.to_bytes(1.23), b'1.23')
+
     def test_edge_just(self):
         self.assertEqual(string.edge_just('', '', 0), ' ')
         self.assertEqual(string.edge_just('', '', -1), ' ')

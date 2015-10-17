@@ -62,6 +62,21 @@ def to_str(s, encoding=None, errors='strict'):
         return str(s)
 
 
+def to_bytes(s, encoding=None, errors='strict'):
+    """Convert string to bytes."""
+    encoding = encoding or 'utf-8'
+
+    if is_unicode(s):
+        return s.encode(encoding, errors)
+    elif is_strlike(s):
+        return s
+    else:
+        if six.PY2:
+            return str(s)
+        else:
+            return str(s).encode(encoding, errors)
+
+
 def edge_just(left, right, width, fillchar=' '):
     padding = fillchar * max(1, width - unicode_width(left + right))
     return left + padding + right
