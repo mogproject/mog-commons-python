@@ -69,6 +69,9 @@ class CaseClass(object):
                     return False
         return True
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, ', '.join('%s=%r' % (k, getattr(self, k)) for k in self._keys))
 
