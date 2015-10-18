@@ -52,12 +52,44 @@ class TestCaseClass(unittest.TestCase):
             False, False, False, False, True,
         ])
 
+        self.assertEqual([x != y for x, y in combi], [
+            False, False, True, True, True,
+            False, False, True, True, True,
+            True, True, False, True, True,
+            True, True, True, False, True,
+            True, True, True, True, False,
+        ])
+
         self.assertEqual([x < y for x, y in combi], [
             False, False, True, True, False,
             False, False, True, True, False,
             False, False, False, True, False,
             False, False, False, False, False,
             True, True, True, True, False,
+        ])
+
+        self.assertEqual([x <= y for x, y in combi], [
+            True, True, True, True, False,
+            True, True, True, True, False,
+            False, False, True, True, False,
+            False, False, False, True, False,
+            True, True, True, True, True,
+        ])
+
+        self.assertEqual([x > y for x, y in combi], [
+            False, False, False, False, True,
+            False, False, False, False, True,
+            True, True, False, False, True,
+            True, True, True, False, True,
+            False, False, False, False, False,
+        ])
+
+        self.assertEqual([x >= y for x, y in combi], [
+            True, True, False, False, True,
+            True, True, False, False, True,
+            True, True, True, False, True,
+            True, True, True, True, True,
+            False, False, False, False, True,
         ])
 
     def test_different_types(self):

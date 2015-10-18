@@ -55,6 +55,9 @@ class CaseClass(object):
     def __lt__(self, other):
         return self.__cmp__(other) < 0
 
+    def __le__(self, other):
+        return self.__cmp__(other) <= 0
+
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
