@@ -9,6 +9,16 @@ class Coord(CaseClass):
         super(Coord, self).__init__(('x', x), ('y', y))
 
 
+class Coord2(CaseClass):
+    def __init__(self, x, y):
+        super(Coord2, self).__init__(('x', x), ('y', y))
+
+
+class Composed(CaseClass):
+    def __init__(self, c):
+        CaseClass.__init__(self, ('c', c))
+
+
 class TestCaseClass(unittest.TestCase):
     def test_init(self):
         a = Coord(123, 45)
@@ -103,6 +113,12 @@ class TestCaseClass(unittest.TestCase):
         self.assertRaisesRegexp(TypeError, '^unorderable types: Coord\(\) < int\(\)$', lambda: Coord(123, 45) < 10)
         self.assertRaisesRegexp(TypeError, '^unorderable types: Coord\(\) < ', lambda: Coord(123, 45) < 'x')
         self.assertRaisesRegexp(TypeError, '^unorderable types: Coord\(\) < AAA\(\)$', lambda: Coord(123, 45) < AAA())
+
+    def test_eq_composed(self):
+        self.assertTrue(Composed(Coord(123, 45)) == Composed(Coord(123, 45)))
+        self.assertFalse(Composed(Coord(123, 45)) == Composed(Coord2(123, 45)))
+        self.assertTrue(Composed(Coord(123, 45)) != Composed(Coord2(123, 45)))
+        self.assertFalse(Composed(Coord(123, 45)) != Composed(Coord(123, 45)))
 
     def test_repr(self):
         self.assertEqual(repr(Coord(123, 45)), 'Coord(x=123, y=45)')
