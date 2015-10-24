@@ -19,6 +19,7 @@ class StringBuffer(object):
 
     We don't use StringIO because there are many differences between PY2 and PY3.
     """
+
     def __init__(self, init_buffer=None):
         self._buffer = init_buffer or b''
 
@@ -37,9 +38,17 @@ class StringBuffer(object):
 
 class TestCase(base_unittest.TestCase):
     def assertRaisesRegexp(self, expected_exception, expected_regexp, callable_obj=None, *args, **kwargs):
-        """Accept difference of the function name between PY2 and PY3."""
-        f = base_unittest.TestCase.assertRaisesRegex if six.PY3 else base_unittest.TestCase.assertRaisesRegexp
-        f(self, expected_exception, expected_regexp, callable_obj, *args, **kwargs)
+        """
+        Accept difference of the function name between PY2 and PY3.
+
+        We don't use built-in assertRaisesRegexp because it is unicode-unsafe.
+        """
+        with self.assertRaises(expected_exception) as cm:
+            callable_obj(*args, **kwargs)
+        if six.PY2:
+            self.assertRegexpMatches(str(cm.exception), expected_regexp)
+        else:
+            self.assertRegex(str(cm.exception), expected_regexp)
 
     def assertOutput(self, expected_stdout, expected_stderr, function, encoding='utf-8'):
         with self.withOutput() as (out, err):
