@@ -92,3 +92,19 @@ class TestString(unittest.TestCase):
         self.assertEqual(string.unicode_right('あいうえお', 11), 'あいうえお')
         self.assertEqual(string.unicode_right('あxいxうxえxお', 4), 'xお')
         self.assertEqual(string.unicode_right('あxいxうxえxお', 5), 'えxお')
+
+    def test_unicode_decode(self):
+        self.assertRaisesRegexp(AssertionError, 'encodings must not be empty.', string.unicode_decode, 'abc', [])
+        self.assertEqual(string.unicode_decode(b'abc', 'ascii'), 'abc')
+        self.assertEqual(string.unicode_decode(b'abc', ['ascii']), 'abc')
+        self.assertRaisesRegexp(
+            UnicodeDecodeError, "'ascii' codec can't decode",
+            string.unicode_decode, 'あいうえお'.encode('utf-8'), 'ascii')
+        self.assertEqual(string.unicode_decode('あいうえお'.encode('utf-8'), ['ascii', 'sjis', 'utf-8']), 'あいうえお')
+        self.assertEqual(string.unicode_decode('あいうえお'.encode('utf-8'), ['ascii', 'utf-8', 'sjis']), 'あいうえお')
+        self.assertEqual(string.unicode_decode('あいうえお'.encode('utf-8'), ['utf-8', 'ascii', 'sjis']), 'あいうえお')
+        self.assertEqual(string.unicode_decode('あいうえお'.encode('utf-8'), ['utf-8', 'utf-8', 'utf-8']), 'あいうえお')
+        self.assertEqual(string.unicode_decode('あいうえお'.encode('sjis'), ['ascii', 'utf-8', 'sjis']), 'あいうえお')
+        self.assertRaisesRegexp(
+            UnicodeDecodeError, "'shift_jis' codec can't decode",
+            string.unicode_decode, 'あいうえお'.encode('utf-8'), ['ascii', 'sjis'])

@@ -3,6 +3,21 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 from unicodedata import east_asian_width
 import six
 
+from mog_commons.collection import distinct
+
+__all__ = [
+    'is_unicode',
+    'is_strlike',
+    'unicode_width',
+    'to_unicode',
+    'to_str',
+    'to_bytes',
+    'edge_just',
+    'unicode_right',
+    'unicode_left',
+    'unicode_decode',
+]
+
 __unicode_width_mapping = {'F': 2, 'H': 1, 'W': 2, 'Na': 1, 'A': 2, 'N': 1}
 
 
@@ -104,3 +119,22 @@ def unicode_right(s, width):
             break
         i -= 1
     return s[i:]
+
+
+def unicode_decode(data, encoding_list):
+    """
+    Decode string data with one or more encodings, trying sequentially
+    :param data: bytes: encoded string data
+    :param encoding_list: list[string] or string: encoding names
+    :return: string: decoded string
+    """
+    assert encoding_list, 'encodings must not be empty.'
+
+    xs = distinct(encoding_list if isinstance(encoding_list, list) else [encoding_list])
+    init, last = xs[:-1], xs[-1]
+    for encoding in init:
+        try:
+            return data.decode(encoding)
+        except UnicodeDecodeError:
+            pass
+    return data.decode(last)

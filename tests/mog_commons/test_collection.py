@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 
-from mog_commons.collection import get_single_item, get_single_key, get_single_value
+from mog_commons.collection import *
 from mog_commons import unittest
 
 
@@ -31,3 +31,12 @@ class TestCollection(unittest.TestCase):
                                 {})
         self.assertRaisesRegexp(AssertionError, 'Single-item dict must have just one item, not 2.', get_single_value,
                                 {'x': 123, 'y': 45})
+
+    def test_distinct(self):
+        self.assertEqual(distinct([]), [])
+        self.assertEqual(distinct([1]), [1])
+        self.assertEqual(distinct([1] * 100), [1])
+        self.assertEqual(distinct([1, 2, 3, 4, 5]), [1, 2, 3, 4, 5])
+        self.assertEqual(distinct([1, 2, 1, 2, 1]), [1, 2])
+        self.assertEqual(distinct([2, 1, 2, 1, 1]), [2, 1])
+        self.assertEqual(distinct('mog-commons-python'), ['m', 'o', 'g', '-', 'c', 'n', 's', 'p', 'y', 't', 'h'])
