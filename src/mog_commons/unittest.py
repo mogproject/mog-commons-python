@@ -59,6 +59,26 @@ class TestCase(base_unittest.TestCase):
         else:
             self.assertRegex(to_str(cm.exception, encoding), expected_regexp)
 
+    def assertRaisesMessage(self, expected_exception, expected_message, callable_obj=None, *args, **kwargs):
+        """
+        Assert the expected exception is raised and its message is equal to expected.
+
+        :param expected_exception: class:
+        :param expected_message: string:
+        :param callable_obj: function:
+        :param args: args
+        :param kwargs: kwargs
+        """
+        encoding = 'utf-8'
+        with self.assertRaises(expected_exception) as cm:
+            callable_obj(*args, **kwargs)
+        try:
+            msg = to_str(cm.exception, encoding)
+        except UnicodeEncodeError:
+            # avoid to use cm.exception.message
+            msg = cm.exception.args[0]
+        self.assertEqual(msg, expected_message)
+
     @contextmanager
     def withOutput(self):
         """

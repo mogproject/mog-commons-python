@@ -3,6 +3,7 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 
 import sys
 import os
+import six
 from mog_commons import unittest
 
 
@@ -45,6 +46,25 @@ class TestUnitTest(unittest.TestCase):
 
         g('かきくけこ\n')
         self.assertRaisesRegexp(AssertionError, 'かきくけこ', g, 'あいうえお\n')
+
+    def test_assert_raises_message(self):
+        class MyException(Exception):
+            pass
+
+        def f(msg):
+            raise MyException(msg)
+
+        self.assertRaisesMessage(MyException, 'あいうえお', f, 'あいうえお')
+        self.assertRaisesMessage(AssertionError, 'MyException not raised',
+                                 self.assertRaisesMessage, MyException, 'あいうえお', lambda: None)
+
+        if six.PY2:
+            expected = ("u'\\u3042\\u3044\\u3046\\u3048' != u'\\u3042\\u3044\\u3046\\u3048\\u304a'\n" +
+                        "- \u3042\u3044\u3046\u3048\n+ \u3042\u3044\u3046\u3048\u304a\n?     +\n")
+        else:
+            expected = "'あいうえ' != 'あいうえお'\n- あいうえ\n+ あいうえお\n?     +\n"
+        self.assertRaisesMessage(AssertionError, expected,
+                                 self.assertRaisesMessage, MyException, 'あいうえお', f, 'あいうえ')
 
     def test_assert_system_exit_fail(self):
         self.assertRaisesRegexp(AssertionError, 'SystemExit not raised', self.assertSystemExit, 0, lambda: 0)
