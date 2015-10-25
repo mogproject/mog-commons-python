@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, print_function, absolute_import, unicode_literals
 
+import os
 import time
 import threading
 from mog_commons.command import *
@@ -12,6 +13,10 @@ class TestCommand(unittest.TestCase):
         self.assertEqual(execute_command(['exit', '2'], shell=True), 2)
         self.assertEqual(execute_command('exit 3', shell=True), 3)
         self.assertEqual(execute_command(['/bin/sh', '-c', 'exit 4'], shell=False), 4)
+
+        with self.withAssertOutputFile(os.path.join('tests', 'resources', 'sjis_ja.txt'),
+                                       expect_file_encoding='sjis', output_encoding='sjis') as out:
+            execute_command('echo "あいうえお"', shell=True, cmd_encoding='sjis', stdout=out)
 
     def test_capture_command(self):
         self.assertEqual(capture_command(['echo', 'あいう'], shell=True), (0, 'あいう\n'.encode('utf-8'), b''))

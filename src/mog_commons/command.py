@@ -22,7 +22,7 @@ def __convert_args(args, shell, cmd_encoding):
         if workaround:
             return ['/bin/sh', '-c', s], False
         else:
-            return args, shell
+            return s, shell
 
     # input as list
     xs = ['/bin/sh', '-c'] if workaround else []
