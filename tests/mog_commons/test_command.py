@@ -10,6 +10,8 @@ from mog_commons import unittest
 class TestCommand(unittest.TestCase):
     def test_execute_command(self):
         self.assertEqual(execute_command(['exit', '2'], shell=True), 2)
+        self.assertEqual(execute_command('exit 3', shell=True), 3)
+        self.assertEqual(execute_command(['/bin/sh', '-c', 'exit 4'], shell=False), 4)
 
     def test_capture_command(self):
         self.assertEqual(capture_command(['echo', 'あいう'], shell=True), (0, 'あいう\n'.encode('utf-8'), b''))
