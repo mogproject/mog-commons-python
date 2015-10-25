@@ -50,8 +50,11 @@ class TestCase(base_unittest.TestCase):
         with self.assertRaises(expected_exception) as cm:
             callable_obj(*args, **kwargs)
         if six.PY2:
-            # to avoid UnicodeEncodeError, use exception.message in Python2
-            msg = cm.exception.message or to_str(cm.exception, encoding)
+            try:
+                msg = to_str(cm.exception, encoding)
+            except UnicodeEncodeError:
+                # avoid to use cm.exception.message
+                msg = cm.exception.args[0]
             self.assertRegexpMatches(msg, expected_regexp)
         else:
             self.assertRegex(to_str(cm.exception, encoding), expected_regexp)
