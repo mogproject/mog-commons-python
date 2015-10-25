@@ -34,6 +34,12 @@ def __convert_args(args, shell, cmd_encoding):
     return xs, shell and not workaround
 
 
+def __convert_env(env, encoding):
+    """Environment variables should be bytes not unicode on Windows."""
+    d = dict(os.environ, **(oget(env, {})))
+    return dict((k.encode(encoding), v.encode(encoding)) for k, v in d.items())
+
+
 def execute_command(args, shell=False, cwd=None, env=None, stdin=None, stdout=None, stderr=None, cmd_encoding='utf-8'):
     """
     Execute external command
@@ -48,7 +54,7 @@ def execute_command(args, shell=False, cwd=None, env=None, stdin=None, stdout=No
     :return: return code
     """
     args, shell = __convert_args(args, shell, cmd_encoding)
-    return subprocess.call(args=args, shell=shell, cwd=cwd, env=dict(os.environ, **(oget(env, {}))),
+    return subprocess.call(args=args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
                            stdin=stdin, stdout=stdout, stderr=stderr)
 
 
@@ -65,7 +71,7 @@ def capture_command(args, shell=False, cwd=None, env=None, stdin=None, cmd_encod
     """
     args, shell = __convert_args(args, shell, cmd_encoding)
     p = subprocess.Popen(
-        args, shell=shell, cwd=cwd, env=dict(os.environ, **(oget(env, {}))),
+        args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
         stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout_data, stderr_data = p.communicate()
     return p.returncode, stdout_data, stderr_data
@@ -79,7 +85,7 @@ def execute_command_with_pid(args, pid_file=None, shell=False, cwd=None, env=Non
         try:
             args, shell = __convert_args(args, shell, cmd_encoding)
             p = subprocess.Popen(
-                args, shell=shell, cwd=cwd, env=dict(os.environ, **(oget(env, {}))),
+                args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
                 stdin=stdin, stdout=stdout, stderr=stderr)
             with open(pid_file, 'w') as f:
                 f.write(str(p.pid))
