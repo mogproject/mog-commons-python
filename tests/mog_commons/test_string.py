@@ -106,5 +106,8 @@ class TestString(unittest.TestCase):
         self.assertEqual(string.unicode_decode('あいうえお'.encode('utf-8'), ['utf-8', 'utf-8', 'utf-8']), 'あいうえお')
         self.assertEqual(string.unicode_decode('あいうえお'.encode('sjis'), ['ascii', 'utf-8', 'sjis']), 'あいうえお')
         self.assertRaisesRegexp(
-            UnicodeDecodeError, "'shift_jis' codec can't decode",
+            UnicodeDecodeError, "'ascii' codec can't decode",
             string.unicode_decode, 'あいうえお'.encode('utf-8'), ['ascii', 'sjis'])
+        self.assertRaisesRegexp(
+            UnicodeDecodeError, "'shift_jis' codec can't decode",
+            string.unicode_decode, 'あいうえお'.encode('utf-8'), ['sjis', 'ascii'])

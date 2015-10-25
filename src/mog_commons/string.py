@@ -131,10 +131,11 @@ def unicode_decode(data, encoding_list):
     assert encoding_list, 'encodings must not be empty.'
 
     xs = distinct(encoding_list if isinstance(encoding_list, list) else [encoding_list])
-    init, last = xs[:-1], xs[-1]
-    for encoding in init:
+    first_exp = None
+    for i, encoding in enumerate(xs):
         try:
             return data.decode(encoding)
-        except UnicodeDecodeError:
-            pass
-    return data.decode(last)
+        except UnicodeDecodeError as e:
+            if i == 0:
+                first_exp = e
+    raise first_exp
