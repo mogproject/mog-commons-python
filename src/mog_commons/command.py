@@ -4,6 +4,7 @@ import sys
 import os
 import errno
 import subprocess
+import six
 from mog_commons.string import is_unicode
 from mog_commons.functional import oget
 
@@ -12,17 +13,25 @@ from mog_commons.functional import oget
 # Process operations
 #
 def __convert_args(args, shell, cmd_encoding):
-    xs = []
+    # Note: workaround for http://bugs.python.org/issue8513
+    workaround = shell and sys.version_info[:2] == (3, 2) and not sys.platform == 'win32'
+
+    if isinstance(args, six.string_types):
+        # input as string
+        s = args.encode(cmd_encoding)
+        if workaround:
+            return ['/bin/sh', '-c', s], False
+        else:
+            return args, shell
+
+    # input as list
+    xs = ['/bin/sh', '-c'] if workaround else []
     if shell:
         args = [subprocess.list2cmdline(args)]
-    if shell and sys.version_info[:2] == (3, 2) and not sys.platform == 'win32':
-        # Note: workaround for http://bugs.python.org/issue8513
-        xs = ['/bin/sh', '-c']
-        shell = False
     for a in args:
         assert is_unicode(a), 'cmd must be unicode string, not %s' % type(a).__name__
         xs.append(a.encode(cmd_encoding))
-    return xs, shell
+    return xs, shell and not workaround
 
 
 def execute_command(args, shell=False, cwd=None, env=None, stdin=None, stdout=None, stderr=None, cmd_encoding='utf-8'):
