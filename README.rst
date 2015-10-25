@@ -28,9 +28,10 @@ Common utility library for Python
 Dependencies
 ------------
 
-* Python: 2.6 / 2.7 / 3.2 / 3.3 / 3.4
+* Python: 2.6 / 2.7 / 3.2 / 3.3 / 3.4 / 3.5
 * six
 * unittest2
+* jinja2: 2.6
 
 ------------
 Installation

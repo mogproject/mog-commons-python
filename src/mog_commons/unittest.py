@@ -2,7 +2,10 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 
 import sys
 import six
+import io
+import tempfile
 from contextlib import contextmanager
+import jinja2
 
 # unittest
 if sys.version_info < (2, 7):
@@ -10,7 +13,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest as base_unittest
 
-from mog_commons.string import to_bytes
+from mog_commons.string import to_bytes, to_str
 
 
 class StringBuffer(object):
@@ -43,12 +46,15 @@ class TestCase(base_unittest.TestCase):
 
         We don't use built-in assertRaisesRegexp because it is unicode-unsafe.
         """
+        encoding = 'utf-8'
         with self.assertRaises(expected_exception) as cm:
             callable_obj(*args, **kwargs)
         if six.PY2:
-            self.assertRegexpMatches(str(cm.exception), expected_regexp)
+            # to avoid UnicodeEncodeError, use exception.message in Python2
+            msg = cm.exception.message or to_str(cm.exception, encoding)
+            self.assertRegexpMatches(msg, expected_regexp)
         else:
-            self.assertRegex(str(cm.exception), expected_regexp)
+            self.assertRegex(to_str(cm.exception, encoding), expected_regexp)
 
     @contextmanager
     def withOutput(self):
@@ -78,6 +84,28 @@ class TestCase(base_unittest.TestCase):
     def assertOutput(self, expected_stdout, expected_stderr, function, encoding='utf-8'):
         with self.withAssertOutput(expected_stdout, expected_stderr, encoding) as (out, err):
             function()
+
+    @contextmanager
+    def withAssertOutputFile(self, expect_file, variables=None, expect_file_encoding='utf-8', output_encoding='utf-8'):
+        """
+        Create a temporary file as output and compare with the file content.
+
+        :param expect_file: string: path to the file which contains the expected output
+        :param variables: dict: variables for template engine jinja2
+        :param expect_file_encoding: string:
+        :param output_encoding: string:
+        """
+        with tempfile.TemporaryFile() as out:
+            yield out
+
+            with io.open(expect_file, encoding=expect_file_encoding) as f:
+                expect = f.read()
+                if variables:
+                    expect = jinja2.Template(expect).render(**variables)
+
+            out.seek(0)
+            actual = out.read().decode(output_encoding)
+            self.assertMultiLineEqual(actual, expect)
 
     def assertSystemExit(self, expected_code, callable_obj=None, *args, **kwargs):
         """
