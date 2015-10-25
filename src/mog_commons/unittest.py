@@ -50,18 +50,12 @@ class TestCase(base_unittest.TestCase):
         else:
             self.assertRegex(str(cm.exception), expected_regexp)
 
-    def assertOutput(self, expected_stdout, expected_stderr, function, encoding='utf-8'):
-        with self.withOutput() as (out, err):
-            function()
-        self.assertMultiLineEqual(out.getvalue(encoding), expected_stdout)
-        self.assertMultiLineEqual(err.getvalue(encoding), expected_stderr)
-
     @contextmanager
     def withOutput(self):
         """
         Capture and suppress stdout and stderr.
         example:
-            with captured_output() as (out, err):
+            with self.withOutput() as (out, err):
                 (do main logic)
             (verify out.getvalue() or err.getvalue())
         """
@@ -73,6 +67,17 @@ class TestCase(base_unittest.TestCase):
             yield sys.stdout, sys.stderr
         finally:
             sys.stdout, sys.stderr = old_out, old_err
+
+    @contextmanager
+    def withAssertOutput(self, expected_stdout, expected_stderr, encoding='utf-8'):
+        with self.withOutput() as (out, err):
+            yield out, err
+        self.assertMultiLineEqual(out.getvalue(encoding), expected_stdout)
+        self.assertMultiLineEqual(err.getvalue(encoding), expected_stderr)
+
+    def assertOutput(self, expected_stdout, expected_stderr, function, encoding='utf-8'):
+        with self.withAssertOutput(expected_stdout, expected_stderr, encoding) as (out, err):
+            function()
 
     def assertSystemExit(self, expected_code, callable_obj=None, *args, **kwargs):
         """
