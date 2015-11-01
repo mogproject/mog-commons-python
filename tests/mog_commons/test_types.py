@@ -29,6 +29,7 @@ class TestTypes(unittest.TestCase):
         @types(bool, int)
         def f():
             pass
+
         return 1
 
     @staticmethod
@@ -36,18 +37,41 @@ class TestTypes(unittest.TestCase):
     def predicate():
         return 1
 
+    @types(x=Option((int, float)))
+    def optional_func1(self, x):
+        return x
+
+    @types(int, xs=Option(ListOf(int)))
+    def optional_func2(self, xs=None):
+        return len(xs or [])
+
+    class Foo(object):
+        pass
+
     def test_types(self):
         str_type = '(basestring|str)' if six.PY2 else '(str|bytes)'
 
         self.assertEqual(self.bin_func(10, 20), 30)
-        self.assertRaisesMessage(AssertionError, 'x must be int, not dict.', self.bin_func, {}, 20)
-        self.assertRaisesMessage(AssertionError, 'y must be int, not list.', self.bin_func, 10, [])
+        self.assertRaisesMessage(TypeError, 'x must be int, not dict.', self.bin_func, {}, 20)
+        self.assertRaisesMessage(TypeError, 'y must be int, not list.', self.bin_func, 10, [])
 
         self.assertEqual(self.complex_func(123, [1, 2], 10, 'abc', 'def', [{'x': set([3, 4, 5])}]), 1)
-        self.assertRaisesMessage(AssertionError, 'kw must be dict(%s->float), not dict.' % str_type,
+        self.assertRaisesMessage(TypeError, 'kw must be dict(%s->float), not dict.' % str_type,
                                  self.complex_func, 123, [1, 2], 10, 'abc', 'def', [{'x': set([3, 4, 5])}], x='12.3')
 
-        self.assertRaisesMessage(AssertionError, 'must return bool, not int.', self.predicate)
+        self.assertRaisesMessage(TypeError, 'must return bool, not int.', self.predicate)
+
+        self.assertEqual(self.optional_func1(None), None)
+        self.assertEqual(self.optional_func1(123), 123)
+        self.assertEqual(self.optional_func1(1.23), 1.23)
+        self.assertRaisesMessage(TypeError, 'x must be (int|float|NoneType), not Foo.',
+                                 self.optional_func1, self.Foo())
+
+        self.assertEqual(self.optional_func2(), 0)
+        self.assertEqual(self.optional_func2(None), 0)
+        self.assertEqual(self.optional_func2([1, 2, 3]), 3)
+        self.assertRaisesMessage(TypeError, 'xs must be (list(int)|NoneType), not list.',
+                                 self.optional_func2, [1, 2, 3.4])
 
     def test_types_error(self):
         self.assertRaisesMessage(AssertionError, 'Not found argument: a', self.err_func1, 123)
