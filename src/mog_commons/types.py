@@ -12,6 +12,7 @@ else:
 __all__ = [
     'String',
     'Unicode',
+    'Option',
     'ListOf',
     'TupleOf',
     'SetOf',
@@ -101,6 +102,11 @@ def KwArg(cls):
     return DictOf(String, cls)
 
 
+def Option(cls):
+    """Shorthand description for a type allowing NoneType"""
+    return cls + (type(None),) if isinstance(cls, tuple) else (cls, type(None))
+
+
 #
 # Helper functions
 #
@@ -114,7 +120,12 @@ def _get_name(cls):
 
 
 def _check_type(obj, cls):
-    return cls.check(obj) if isinstance(cls, ComposableType) else isinstance(obj, cls)
+    if isinstance(cls, ComposableType):
+        return cls.check(obj)
+    elif isinstance(cls, tuple):
+        return any(_check_type(obj, t) for t in cls)
+    else:
+        return isinstance(obj, cls)
 
 
 #
@@ -147,12 +158,15 @@ def types(*return_type, **arg_types):
             for arg_name, expect in arg_types.items():
                 assert arg_name in call_args, 'Not found argument: %s' % arg_name
                 actual = call_args[arg_name]
-                assert _check_type(actual, expect), arg_msg % (arg_name, _get_name(expect), type(actual).__name__)
+                if not _check_type(actual, expect):
+                    raise TypeError(arg_msg % (arg_name, _get_name(expect), type(actual).__name__))
 
             ret = func(*args, **kwargs)
             if return_type:
-                assert _check_type(ret, return_type[0]), return_msg % (_get_name(return_type[0]), type(ret).__name__)
+                if not _check_type(ret, return_type[0]):
+                    raise TypeError(return_msg % (_get_name(return_type[0]), type(ret).__name__))
             return ret
+
         return wrapper
 
     return f
