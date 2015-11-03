@@ -15,6 +15,12 @@ else:
 
 from mog_commons.string import to_bytes, to_str
 
+__all__ = [
+    'FakeInput',
+    'FakeBytesInput',
+    'TestCase',
+]
+
 
 class StringBuffer(object):
     """
@@ -37,6 +43,32 @@ class StringBuffer(object):
 
     def getvalue(self, encoding='utf-8', errors='strict'):
         return self._buffer.decode(encoding, errors)
+
+
+class FakeInput(six.StringIO):
+    """Fake input object"""
+
+    def __init__(self, buff=None):
+        six.StringIO.__init__(self, buff or '')
+
+    def fileno(self):
+        return 0
+
+    def isatty(self):
+        return True
+
+
+class FakeBytesInput(six.BytesIO):
+    """Fake bytes input object"""
+
+    def __init__(self, buff=None):
+        six.BytesIO.__init__(self, buff or b'')
+
+    def fileno(self):
+        return 0
+
+    def isatty(self):
+        return True
 
 
 class TestCase(base_unittest.TestCase):
