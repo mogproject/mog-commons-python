@@ -45,14 +45,16 @@ class TerminalHandler(CaseClass):
 
     def __init__(self, term_type=None, encoding=None,
                  stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr,
-                 getch_repeat_threshold=DEFAULT_GETCH_REPEAT_THRESHOLD):
+                 getch_repeat_threshold=DEFAULT_GETCH_REPEAT_THRESHOLD,
+                 keep_input_clean=True):
         CaseClass.__init__(self,
                            ('term_type', term_type or self._detect_term_type()),
                            ('encoding', encoding or self._detect_encoding(stdout)),
                            ('stdin', stdin),
                            ('stdout', stdout),
                            ('stderr', stderr),
-                           ('getch_repeat_threshold', getch_repeat_threshold)
+                           ('getch_repeat_threshold', getch_repeat_threshold),
+                           ('keep_input_clean', keep_input_clean),
                            )
         self.restore_terminal = self._get_restore_function()  # binary function for restoring terminal attributes
         self.last_getch_time = 0.0
@@ -149,7 +151,8 @@ class TerminalHandler(CaseClass):
         :return: unicode:
         """
         ch = self._get_one_char()
-        self.clear_input_buffer()
+        if self.keep_input_clean:
+            self.clear_input_buffer()
 
         try:
             # accept only unicode characters (for Python 2)

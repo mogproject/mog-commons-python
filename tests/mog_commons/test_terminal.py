@@ -73,6 +73,17 @@ class TestTerminal(TestCase):
         append_char(b'y')
         self.assertEqual(t1.getch(), 'y')
 
+    @base_unittest.skipUnless(os.name != 'nt', 'requires POSIX compatible')
+    def test_getch_not_keep_input_clean(self):
+        fin = FakeBytesInput(b'abcde')
+        t1 = TerminalHandler(stdin=fin, keep_input_clean=False)
+        self.assertEqual(t1.getch(), 'a')
+        self.assertEqual(t1.getch(), 'b')
+        self.assertEqual(t1.getch(), 'c')
+        self.assertEqual(t1.getch(), 'd')
+        self.assertEqual(t1.getch(), 'e')
+        self.assertEqual(t1.getch(), '')
+
     def test_resolve_encoding(self):
         import io
         import codecs
