@@ -5,7 +5,7 @@ import os
 import time
 import six
 from mog_commons.terminal import TerminalHandler
-from mog_commons.unittest import TestCase, base_unittest, FakeBytesInput
+from mog_commons.unittest import TestCase, base_unittest, FakeBytesInput, FakeInput
 
 
 class TestTerminal(TestCase):
@@ -22,6 +22,14 @@ class TestTerminal(TestCase):
         self.assertEqual(TerminalHandler(stdin=FakeBytesInput(b'abc')).getch(), 'a')
         self.assertEqual(TerminalHandler(stdin=FakeBytesInput('あ'.encode('utf-8'))).getch(), '')
         self.assertEqual(TerminalHandler(stdin=FakeBytesInput('あ'.encode('sjis'))).getch(), '')
+
+    def test_getch_disabled(self):
+        t = TerminalHandler(stdin=FakeInput('a\nb\ncd\ne\n'), keep_input_clean=False, getch_enabled=False)
+        self.assertEqual(t.getch(), 'a')
+        self.assertEqual(t.getch(), 'b')
+        self.assertEqual(t.getch(), 'c')
+        self.assertEqual(t.getch(), 'e')
+        self.assertRaises(EOFError, t.getch)
 
     @base_unittest.skipUnless(os.name != 'nt', 'requires POSIX compatible')
     def test_getch_key_repeat(self):
@@ -95,3 +103,9 @@ class TestTerminal(TestCase):
             out = io.TextIOWrapper(six.StringIO(), 'sjis')
 
         self.assertEqual(TerminalHandler._detect_encoding(out), 'sjis')
+
+    def test_init(self):
+        self.assertEqual(TerminalHandler(stdin=six.StringIO(), getch_enabled=False).getch_enabled, False)
+        self.assertEqual(TerminalHandler(stdin=six.StringIO(), getch_enabled=True).getch_enabled, False)
+        self.assertEqual(TerminalHandler(stdin=FakeInput(), getch_enabled=False).getch_enabled, False)
+        self.assertEqual(TerminalHandler(stdin=FakeInput(), getch_enabled=True).getch_enabled, True)

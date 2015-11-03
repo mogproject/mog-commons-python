@@ -46,7 +46,7 @@ class TerminalHandler(CaseClass):
     def __init__(self, term_type=None, encoding=None,
                  stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr,
                  getch_repeat_threshold=DEFAULT_GETCH_REPEAT_THRESHOLD,
-                 keep_input_clean=True):
+                 keep_input_clean=True, getch_enabled=True):
         CaseClass.__init__(self,
                            ('term_type', term_type or self._detect_term_type()),
                            ('encoding', encoding or self._detect_encoding(stdout)),
@@ -55,10 +55,17 @@ class TerminalHandler(CaseClass):
                            ('stderr', stderr),
                            ('getch_repeat_threshold', getch_repeat_threshold),
                            ('keep_input_clean', keep_input_clean),
+                           ('getch_enabled', getch_enabled and self._can_getch_enable(stdin))
                            )
         self.restore_terminal = self._get_restore_function()  # binary function for restoring terminal attributes
         self.last_getch_time = 0.0
         self.last_getch_char = '..'
+
+    @staticmethod
+    def _can_getch_enable(stdin):
+        if stdin.isatty():
+            return os.name == 'nt' or hasattr(stdin, 'fileno')
+        return False
 
     @staticmethod
     def _detect_term_type():
@@ -103,13 +110,11 @@ class TerminalHandler(CaseClass):
         Return the binary function for restoring terminal attributes.
         :return: function (signal, frame) => None:
         """
-        if os.name == 'nt':
+        if os.name == 'nt' or not self.getch_enabled:
             return lambda signal, frame: None
 
-        assert hasattr(self.stdin, 'fileno'), 'Invalid input device.'
-        fd = self.stdin.fileno()
-
         try:
+            fd = self.stdin.fileno()
             initial = termios.tcgetattr(fd)
         except termios.error:
             return lambda signal, frame: None
@@ -147,7 +152,7 @@ class TerminalHandler(CaseClass):
         """
         Read one character from stdin.
 
-        If stdin is not a tty, read input as one line.
+        If stdin is not a tty or set `getch_enabled`=False, read input as one line.
         :return: unicode:
         """
         ch = self._get_one_char()
@@ -163,7 +168,7 @@ class TerminalHandler(CaseClass):
         return uch if self._check_key_repeat(uch) else ''
 
     def _get_one_char(self):
-        if not self.stdin.isatty():  # pipeline or MinTTY
+        if not self.getch_enabled:
             return self.gets()[:1]
         elif os.name == 'nt':  # Windows
             return msvcrt.getch()
