@@ -180,6 +180,7 @@ class TerminalHandler(CaseClass):
 
         t = time.time()
         if ch == self.last_getch_char and t < self.last_getch_time + self.getch_repeat_threshold:
+            self.last_getch_time = t
             return False
 
         self.last_getch_time = t
