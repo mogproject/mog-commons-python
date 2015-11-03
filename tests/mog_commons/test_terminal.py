@@ -25,22 +25,49 @@ class TestTerminal(TestCase):
     @base_unittest.skipUnless(os.name != 'nt', 'requires POSIX compatible')
     def test_getch_key_repeat(self):
         fin = FakeBytesInput(b'abcde')
-        t = TerminalHandler(stdin=fin)
 
         def append_char(ch):
             fin.write(ch)
             fin.seek(-len(ch), 1)
 
-        self.assertEqual(t.getch(), 'a')
+        t1 = TerminalHandler(stdin=fin)
+        self.assertEqual(t1.getch(), 'a')
         append_char(b'x')
-        self.assertEqual(t.getch(), 'x')
+        self.assertEqual(t1.getch(), 'x')
         append_char(b'x')
-        self.assertEqual(t.getch(), '')
+        self.assertEqual(t1.getch(), '')
+        append_char(b'x')
+        self.assertEqual(t1.getch(), '')
         append_char(b'y')
-        self.assertEqual(t.getch(), 'y')
+        self.assertEqual(t1.getch(), 'y')
         append_char(b'y')
-        self.assertEqual(t.getch(), '')
+        self.assertEqual(t1.getch(), '')
 
         time.sleep(1)
         append_char(b'y')
-        self.assertEqual(t.getch(), 'y')
+        self.assertEqual(t1.getch(), 'y')
+
+    @base_unittest.skipUnless(os.name != 'nt', 'requires POSIX compatible')
+    def test_getch_key_repeat_disabled(self):
+        fin = FakeBytesInput(b'abcde')
+
+        def append_char(ch):
+            fin.write(ch)
+            fin.seek(-len(ch), 1)
+
+        t1 = TerminalHandler(stdin=fin, getch_repeat_threshold=0)
+        self.assertEqual(t1.getch(), 'a')
+        append_char(b'x')
+        self.assertEqual(t1.getch(), 'x')
+        append_char(b'x')
+        self.assertEqual(t1.getch(), 'x')
+        append_char(b'x')
+        self.assertEqual(t1.getch(), 'x')
+        append_char(b'y')
+        self.assertEqual(t1.getch(), 'y')
+        append_char(b'y')
+        self.assertEqual(t1.getch(), 'y')
+
+        time.sleep(1)
+        append_char(b'y')
+        self.assertEqual(t1.getch(), 'y')
