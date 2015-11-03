@@ -3,6 +3,7 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 
 import os
 import time
+import six
 from mog_commons.terminal import TerminalHandler
 from mog_commons.unittest import TestCase, base_unittest, FakeBytesInput
 
@@ -71,3 +72,15 @@ class TestTerminal(TestCase):
         time.sleep(1)
         append_char(b'y')
         self.assertEqual(t1.getch(), 'y')
+
+    def test_resolve_encoding(self):
+        import io
+        import codecs
+
+        if six.PY2:
+            out = codecs.getwriter('sjis')
+            out.encoding = 'sjis'
+        else:
+            out = io.TextIOWrapper(six.StringIO(), 'sjis')
+
+        self.assertEqual(TerminalHandler._detect_encoding(out), 'sjis')

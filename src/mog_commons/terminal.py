@@ -79,7 +79,7 @@ class TerminalHandler(CaseClass):
         Detect the default encoding for the terminal's output.
         :return: string: encoding string
         """
-        if stdout.encoding:
+        if hasattr(stdout, 'encoding') and stdout.encoding:
             return stdout.encoding
 
         if os.environ.get('LANG'):
