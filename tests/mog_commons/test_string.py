@@ -61,6 +61,38 @@ class TestString(unittest.TestCase):
         self.assertEqual(string.edge_just('あいu', 'えo', 10), 'あいu  えo')
         self.assertEqual(string.edge_just('あいう', 'えお', 10), 'あいう えお')
 
+    def test_edge_just_error(self):
+        msg = 'fillchar must be single-width char'
+        self.assertRaisesMessage(AssertionError, msg, string.edge_just, '', '', 10, '')
+        self.assertRaisesMessage(AssertionError, msg, string.edge_just, '', '', 10, 'ab')
+        self.assertRaisesMessage(AssertionError, msg, string.edge_just, '', '', 10, 'あ')
+
+    def test_unicode_ljust(self):
+        self.assertEqual(string.unicode_ljust('', 0), '')
+        self.assertEqual(string.unicode_ljust('', -1), '')
+        self.assertEqual(string.unicode_ljust('', 1), ' ')
+        self.assertEqual(string.unicode_ljust('', 10), '          ')
+        self.assertEqual(string.unicode_ljust('', 10, '.'), '..........')
+        self.assertEqual(string.unicode_ljust('abcde', 10), 'abcde     ')
+        self.assertEqual(string.unicode_ljust('abcdefghij', 10), 'abcdefghij')
+        self.assertEqual(string.unicode_ljust('abcdefghijk', 10), 'abcdefghijk')
+        self.assertEqual(string.unicode_ljust('あいう', 10), 'あいう    ')
+        self.assertEqual(string.unicode_ljust('あいうe', 10), 'あいうe   ')
+        self.assertEqual(string.unicode_ljust('あいうeお', 10, '*'), 'あいうeお*')
+
+    def test_unicode_rjust(self):
+        self.assertEqual(string.unicode_rjust('', 0), '')
+        self.assertEqual(string.unicode_rjust('', -1), '')
+        self.assertEqual(string.unicode_rjust('', 1), ' ')
+        self.assertEqual(string.unicode_rjust('', 10), '          ')
+        self.assertEqual(string.unicode_rjust('', 10, '.'), '..........')
+        self.assertEqual(string.unicode_rjust('abcde', 10), '     abcde')
+        self.assertEqual(string.unicode_rjust('abcdefghij', 10), 'abcdefghij')
+        self.assertEqual(string.unicode_rjust('abcdefghijk', 10), 'abcdefghijk')
+        self.assertEqual(string.unicode_rjust('あいう', 10), '    あいう')
+        self.assertEqual(string.unicode_rjust('あいうe', 10), '   あいうe')
+        self.assertEqual(string.unicode_rjust('あいうeお', 10, '*'), '*あいうeお')
+
     def test_unicode_left(self):
         self.assertEqual(string.unicode_left('', 3), '')
         self.assertEqual(string.unicode_left('abcde', 3), 'abc')
