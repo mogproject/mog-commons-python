@@ -4,6 +4,7 @@ from unicodedata import east_asian_width
 import six
 
 from mog_commons.collection import distinct
+from mog_commons.types import *
 
 __all__ = [
     'is_unicode',
@@ -29,6 +30,7 @@ def is_strlike(s):
     return isinstance(s, (six.string_types, bytes))
 
 
+@types(s=String)
 def unicode_width(s):
     if is_unicode(s):
         return sum(__unicode_width_mapping[east_asian_width(c)] for c in s)
@@ -37,6 +39,7 @@ def unicode_width(s):
     return len(s)
 
 
+@types(encoding=Option(String), errors=String)
 def to_unicode(s, encoding=None, errors='strict'):
     """
     Make unicode string from any value
@@ -58,6 +61,7 @@ def to_unicode(s, encoding=None, errors='strict'):
             return str(s)
 
 
+@types(encoding=Option(String), errors=String)
 def to_str(s, encoding=None, errors='strict'):
     """
     Make str from any value
@@ -77,6 +81,7 @@ def to_str(s, encoding=None, errors='strict'):
         return str(s)
 
 
+@types(encoding=Option(String), errors=String)
 def to_bytes(s, encoding=None, errors='strict'):
     """Convert string to bytes."""
     encoding = encoding or 'utf-8'
@@ -92,11 +97,40 @@ def to_bytes(s, encoding=None, errors='strict'):
             return str(s).encode(encoding, errors)
 
 
-def edge_just(left, right, width, fillchar=' '):
-    padding = fillchar * max(1, width - unicode_width(left + right))
+@types(left=String, right=String, width=int, fillchar=String, min_padding_length=int)
+def edge_just(left, right, width, fillchar=' ', min_padding_length=1):
+    """
+    :param left:
+    :param right:
+    :param width:
+    :param fillchar:
+    :param min_padding_length: minimum padding length
+    :return:
+    """
+    assert unicode_width(fillchar) == 1, 'fillchar must be single-width char'
+    padding = fillchar * max(min_padding_length, width - unicode_width(left + right))
     return left + padding + right
 
 
+@types(s=String, width=int, fillchar=String)
+def unicode_ljust(s, width, fillchar=' '):
+    """
+    Return Unicode string left-justified in a print-length width.
+    Padding is done using the specified fill character (default is a space).
+    """
+    return edge_just(s, '', width, fillchar, 0)
+
+
+@types(s=String, width=int, fillchar=String)
+def unicode_rjust(s, width, fillchar=' '):
+    """
+    Return Unicode string right-justified in a print-length width.
+    Padding is done using the specified fill character (default is a space).
+    """
+    return edge_just('', s, width, fillchar, 0)
+
+
+@types(s=String, width=int)
 def unicode_left(s, width):
     """Cut unicode string from left to fit a given width."""
     i = 0
@@ -109,6 +143,7 @@ def unicode_left(s, width):
     return s[:i]
 
 
+@types(s=String, width=int)
 def unicode_right(s, width):
     """Cut unicode string from right to fit a given width."""
     i = len(s)
@@ -121,6 +156,7 @@ def unicode_right(s, width):
     return s[i:]
 
 
+@types(encoding_list=(String, ListOf(String)))
 def unicode_decode(data, encoding_list):
     """
     Decode string data with one or more encodings, trying sequentially
