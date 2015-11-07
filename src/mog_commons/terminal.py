@@ -63,7 +63,7 @@ class TerminalHandler(CaseClass):
 
     @staticmethod
     def _can_getch_enable(stdin):
-        if stdin.isatty():
+        if hasattr(stdin, 'isatty') and stdin.isatty():
             return os.name == 'nt' or hasattr(stdin, 'fileno')
         return False
 
@@ -125,7 +125,7 @@ class TerminalHandler(CaseClass):
         """
         Clear the terminal screen.
         """
-        if self.stdout.isatty() or self.term_type == 'mintty':
+        if hasattr(self.stdout, 'isatty') and self.stdout.isatty() or self.term_type == 'mintty':
             cmd, shell = {
                 'posix': ('clear', False),
                 'nt': ('cls', True),
@@ -138,7 +138,7 @@ class TerminalHandler(CaseClass):
         """
         Clear the input buffer.
         """
-        if self.stdin.isatty():
+        if hasattr(self.stdin, 'isatty') and self.stdin.isatty():
             if os.name == 'nt':
                 while msvcrt.kbhit():
                     msvcrt.getch()
