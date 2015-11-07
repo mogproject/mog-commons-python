@@ -9,6 +9,11 @@ from mog_commons.unittest import TestCase, base_unittest, FakeBytesInput, FakeIn
 
 
 class TestTerminal(TestCase):
+    def test_clear(self):
+        with self.withAssertOutput('', '') as (out, err):
+            # assume this should not raise an error
+            TerminalHandler(stdout=out, stderr=err).clear()
+
     def test_getch_from_file(self):
         with open(os.path.join('tests', 'resources', 'test_terminal_input.txt')) as f:
             t = TerminalHandler(stdin=f)
