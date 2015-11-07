@@ -14,6 +14,8 @@ __all__ = [
     'to_str',
     'to_bytes',
     'edge_just',
+    'unicode_ljust',
+    'unicode_rjust',
     'unicode_right',
     'unicode_left',
     'unicode_decode',
