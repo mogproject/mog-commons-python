@@ -11,7 +11,7 @@ from mog_commons.types import types
 
 
 # workaround for http://bugs.python.org/issue8513
-SHOULD_NOT_USE_SHELL_MODE = sys.version_info[:2] == (3, 2) and not sys.platform == 'win32'
+SHOULD_NOT_USE_BYTES = sys.version_info[:2] == (3, 2)
 
 # workaround for Windows+Python3 environment
 SHOULD_NOT_ENCODE_ARGS = six.PY3 and sys.platform == 'win32'
@@ -21,28 +21,20 @@ SHOULD_NOT_ENCODE_ARGS = six.PY3 and sys.platform == 'win32'
 # Process operations
 #
 def __convert_args(args, shell, cmd_encoding):
-    workaround = shell and SHOULD_NOT_USE_SHELL_MODE
-
     if isinstance(args, six.string_types):
         # input as string
         if not SHOULD_NOT_ENCODE_ARGS:
             args = to_bytes(args, cmd_encoding)
-        if workaround:
-            return ['/bin/sh', '-c', args], False
-        else:
-            return args, shell
-
-    # input as list
-    if shell and sys.platform != 'win32':
-        args = [to_bytes(subprocess.list2cmdline(args), cmd_encoding)]
-        if workaround:
-            return ['/bin/sh', '-c'] + args, False
+        if SHOULD_NOT_USE_BYTES:
+            args = [args]
     else:
-        if not SHOULD_NOT_ENCODE_ARGS:
-            if six.PY2 or sys.platform != 'win32':
+        # input as list
+        if shell and sys.platform != 'win32':
+            args = [to_bytes(subprocess.list2cmdline(args), cmd_encoding)]
+        else:
+            if not SHOULD_NOT_ENCODE_ARGS:
                 args = [to_bytes(a, cmd_encoding) for a in args]
-
-    return args, shell
+    return args
 
 
 def __convert_env(env, encoding):
@@ -69,9 +61,9 @@ def execute_command(args, shell=False, cwd=None, env=None, stdin=None, stdout=No
     :param cmd_encoding: command line encoding: string
     :return: return code
     """
-    args, shell = __convert_args(args, shell, cmd_encoding)
-    return subprocess.call(args=args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
-                           stdin=stdin, stdout=stdout, stderr=stderr)
+    return subprocess.call(
+        args=__convert_args(args, shell, cmd_encoding), shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
+        stdin=stdin, stdout=stdout, stderr=stderr)
 
 
 def capture_command(args, shell=False, cwd=None, env=None, stdin=None, cmd_encoding='utf-8'):
@@ -85,9 +77,8 @@ def capture_command(args, shell=False, cwd=None, env=None, stdin=None, cmd_encod
     :param cmd_encoding: command line encoding: string
     :return: tuple of return code, stdout data and stderr data
     """
-    args, shell = __convert_args(args, shell, cmd_encoding)
     p = subprocess.Popen(
-        args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
+        __convert_args(args, shell, cmd_encoding), shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
         stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout_data, stderr_data = p.communicate()
     return p.returncode, stdout_data, stderr_data
@@ -99,7 +90,7 @@ def execute_command_with_pid(args, pid_file=None, shell=False, cwd=None, env=Non
         return execute_command(args, shell, cwd, env, stdin, stdout, stderr, cmd_encoding)
     else:
         try:
-            args, shell = __convert_args(args, shell, cmd_encoding)
+            args = __convert_args(args, shell, cmd_encoding)
             p = subprocess.Popen(
                 args, shell=shell, cwd=cwd, env=__convert_env(env, cmd_encoding),
                 stdin=stdin, stdout=stdout, stderr=stderr)
