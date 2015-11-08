@@ -1,6 +1,7 @@
 from __future__ import division, print_function, absolute_import, unicode_literals
 
 import sys
+import os
 import six
 import io
 import tempfile
@@ -141,7 +142,8 @@ class TestCase(base_unittest.TestCase):
             function()
 
     @contextmanager
-    def withAssertOutputFile(self, expect_file, variables=None, expect_file_encoding='utf-8', output_encoding='utf-8'):
+    def withAssertOutputFile(self, expect_file, variables=None, expect_file_encoding='utf-8', output_encoding='utf-8',
+                             replace_linesep=False):
         """
         Create a temporary file as output and compare with the file content.
 
@@ -149,6 +151,7 @@ class TestCase(base_unittest.TestCase):
         :param variables: dict: variables for template engine jinja2
         :param expect_file_encoding: string:
         :param output_encoding: string:
+        :param replace_linesep: replace all newlines in the expected file to OS default separator if true
         """
         with tempfile.TemporaryFile() as out:
             yield out
@@ -157,6 +160,8 @@ class TestCase(base_unittest.TestCase):
                 expect = f.read()
                 if variables:
                     expect = jinja2.Template(expect).render(**variables)
+                if replace_linesep:
+                    expect = expect.replace('\n', os.linesep)
 
             out.seek(0)
             actual = out.read().decode(output_encoding)
