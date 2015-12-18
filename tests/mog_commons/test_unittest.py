@@ -30,6 +30,14 @@ class TestUnitTest(unittest.TestCase):
         self.assertSystemExit(123, lambda: sys.exit(123))
         self.assertSystemExit(234, lambda x: sys.exit(x), 234)
 
+    def test_with_bytes_output(self):
+        with self.withBytesOutput() as (out, err):
+            out.write(b'\xff\xfe')
+            out.write('あいうえお'.encode('utf-8'))
+            err.write(b'\xfd\xfc')
+        self.assertEqual(out.getvalue(), b'\xff\xfe' + 'あいうえお'.encode('utf-8'))
+        self.assertEqual(err.getvalue(), b'\xfd\xfc')
+
     def test_with_assert_output_file(self):
         def f(text):
             with self.withAssertOutputFile(os.path.join('tests', 'resources', 'utf8_ja.txt')) as out:
