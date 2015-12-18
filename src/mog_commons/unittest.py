@@ -113,7 +113,7 @@ class TestCase(base_unittest.TestCase):
         self.assertEqual(msg, expected_message)
 
     @contextmanager
-    def withOutput(self):
+    def withOutput(self, buffer_type=StringBuffer):
         """
         Capture and suppress stdout and stderr.
         example:
@@ -121,7 +121,7 @@ class TestCase(base_unittest.TestCase):
                 (do main logic)
             (verify out.getvalue() or err.getvalue())
         """
-        new_out, new_err = StringBuffer(), StringBuffer()
+        new_out, new_err = buffer_type(), buffer_type()
         old_out, old_err = sys.stdout, sys.stderr
 
         try:
@@ -129,6 +129,18 @@ class TestCase(base_unittest.TestCase):
             yield sys.stdout, sys.stderr
         finally:
             sys.stdout, sys.stderr = old_out, old_err
+
+    @contextmanager
+    def withBytesOutput(self):
+        """
+        Capture and suppress stdout and stderr. The value is represented as bytes.
+        example:
+            with self.withBytesOutput() as (out, err):
+                (do main logic)
+            (verify out.getvalue() or err.getvalue())
+        """
+        with self.withOutput(six.BytesIO) as (out, err):
+            yield out, err
 
     @contextmanager
     def withAssertOutput(self, expected_stdout, expected_stderr, encoding='utf-8'):
