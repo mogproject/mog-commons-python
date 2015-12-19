@@ -38,6 +38,22 @@ class TestUnitTest(unittest.TestCase):
         self.assertEqual(out.getvalue(), b'\xff\xfe' + 'あいうえお'.encode('utf-8'))
         self.assertEqual(err.getvalue(), b'\xfd\xfc')
 
+    def test_with_bytes_output_types(self):
+        # accepts unicode
+        def f(data, expected):
+            with self.withBytesOutput() as (out, err):
+                for d in data:
+                    out.write(d)
+            self.assertEqual(out.getvalue(), expected)
+
+        f(['あいうえお'], 'あいうえお'.encode('utf-8'))
+        f([b'\xff', 'あいうえお'], b'\xff' + 'あいうえお'.encode('utf-8'))
+
+        # accepts only string-like types
+        self.assertRaises(TypeError, f, [[]])
+        self.assertRaises(TypeError, f, [{'a': 20}])
+        self.assertRaises(TypeError, f, [1.23])
+
     def test_with_assert_output_file(self):
         def f(text):
             with self.withAssertOutputFile(os.path.join('tests', 'resources', 'utf8_ja.txt')) as out:
@@ -45,7 +61,7 @@ class TestUnitTest(unittest.TestCase):
 
         def g(text):
             with self.withAssertOutputFile(
-                os.path.join('tests', 'resources', 'utf8_ja_template.txt'), {'text': 'かきくけこ'}
+                    os.path.join('tests', 'resources', 'utf8_ja_template.txt'), {'text': 'かきくけこ'}
             ) as out:
                 out.write(text.encode('utf-8'))
 

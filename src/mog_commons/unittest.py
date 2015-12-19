@@ -15,6 +15,7 @@ else:
     import unittest as base_unittest
 
 from mog_commons.string import to_bytes, to_str
+from mog_commons.types import *
 
 __all__ = [
     'FakeInput',
@@ -44,6 +45,18 @@ class StringBuffer(object):
 
     def getvalue(self, encoding='utf-8', errors='strict'):
         return self._buffer.decode(encoding, errors)
+
+
+class BytesBuffer(six.BytesIO):
+    """
+    Replace for six.BytesIO
+
+    More strict type checking and implicit conversion of unicode to bytes are implemented.
+    """
+
+    @types(s=String)
+    def write(self, s, encoding='utf-8', errors='strict'):
+        six.BytesIO.write(self, to_bytes(s, encoding, errors))
 
 
 class FakeInput(six.StringIO):
@@ -139,7 +152,7 @@ class TestCase(base_unittest.TestCase):
                 (do main logic)
             (verify out.getvalue() or err.getvalue())
         """
-        with self.withOutput(six.BytesIO) as (out, err):
+        with self.withOutput(BytesBuffer) as (out, err):
             yield out, err
 
     @contextmanager
