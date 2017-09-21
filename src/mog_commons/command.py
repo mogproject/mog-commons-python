@@ -4,6 +4,7 @@ import sys
 import os
 import errno
 import subprocess
+import platform
 import six
 from mog_commons.string import to_bytes
 from mog_commons.functional import oget
@@ -13,8 +14,8 @@ from mog_commons.types import types
 # workaround for http://bugs.python.org/issue8513
 SHOULD_NOT_USE_BYTES = sys.version_info[:2] == (3, 2)
 
-# workaround for Windows+Python3 environment
-SHOULD_NOT_ENCODE_ARGS = six.PY3 and sys.platform == 'win32'
+# workaround for Windows+Python3 and Cygwin environment
+SHOULD_NOT_ENCODE_ARGS = (six.PY3 and sys.platform == 'win32') or platform.system().upper().startswith('CYGWIN')
 
 
 #
